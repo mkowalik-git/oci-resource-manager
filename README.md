@@ -28,7 +28,7 @@ If you don’t already have a config file for the OCI CLI, follow these steps:
    ```
 2. **Run the CLI config command**:
    ```bash
-  oci setup config
+   oci setup config
    ```
 3. You will be prompted for:
     - Your tenancy OCID
@@ -51,7 +51,7 @@ For detailed setup instructions, refer to the [OCI CLI Config File Documentation
   ```bash
   python -m venv venv
   source venv/bin/activate  # On Windows: venv\Scripts\activate
-
+  ```
 3. Install the dependencies:
   ```bash
   pip install -r requirements.txt
@@ -74,3 +74,7 @@ For detailed setup instructions, refer to the [OCI CLI Config File Documentation
 🙌 **Contributing**
 
 Contributions, suggestions, and improvements are welcome! Feel free to fork the repo and submit a pull request. For feature requests or issues, please open an issue ticket.
+
+📄 **License**
+
+This project is licensed under the **MIT License**.
