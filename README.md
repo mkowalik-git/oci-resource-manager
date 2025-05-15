@@ -18,7 +18,7 @@ Before you begin, ensure the following are in place:
 - OCI CLI/SDK configuration (`~/.oci/config`)
 - Valid OCI credentials with appropriate permissions
 
-### 🔧 Setting Up Your OCI Config File
+# 🔧 Setting Up Your OCI Config File
 
 If you don’t already have a config file for the OCI CLI, follow these steps:
 
@@ -40,7 +40,7 @@ If you don’t already have a config file for the OCI CLI, follow these steps:
 
 For detailed setup instructions, refer to the [OCI CLI Config File Documentation](https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/cliinstall.htm#configfile).
 
-### 📦 Setup Instructions
+# 📦 Setup Instructions
 
 1. **Clone the repository**:
    ```bash
@@ -56,7 +56,7 @@ For detailed setup instructions, refer to the [OCI CLI Config File Documentation
    ```bash
    pip install -r requirements.txt
    ```
-### 🖥️ Running the Application
+# 🖥️ Running the Application
 
 1. Make sure your OCI config file is present at ~/.oci/config
 2. Launch the app:
@@ -71,10 +71,10 @@ For detailed setup instructions, refer to the [OCI CLI Config File Documentation
 - SSH keys used during compute instance creation are generated and used locally and temporarily.
 - You remain in full control — this app runs entirely on your machine.
 
-🙌 **Contributing**
+# 🙌 **Contributing**
 
 Contributions, suggestions, and improvements are welcome! Feel free to fork the repo and submit a pull request. For feature requests or issues, please open an issue ticket.
 
-📄 **License**
+### 📄 **License**
 
 This project is licensed under the **MIT License**.
