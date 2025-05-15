@@ -72,7 +72,7 @@ For detailed setup instructions, refer to the [OCI CLI Config File Documentation
 2. Launch the app:
 
    ```bash
-   streamlit run app.py
+   streamlit run oci-gui-app.py
    ```
    
 4. Open your browser to http://localhost:8501 and start managing your OCI resources visually.
