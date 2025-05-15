@@ -25,9 +25,11 @@ If you don’t already have a config file for the OCI CLI, follow these steps:
 1. **Install the OCI CLI** (if not already installed):
    ```bash
    pip install oci-cli
+   ```
 2. **Run the CLI config command**:
-  ```bash
+   ```bash
   oci setup config
+   ```
 3. You will be prompted for:
     - Your tenancy OCID
     - Your user OCID
@@ -44,7 +46,7 @@ For detailed setup instructions, refer to the [OCI CLI Config File Documentation
    ```bash
    git clone https://github.com/your-username/oci-resource-manager-gui.git
    cd oci-resource-manager-gui
-
+   ```
 2. **Create and activate a virtual environment**:
   ```bash
   python -m venv venv
@@ -53,13 +55,14 @@ For detailed setup instructions, refer to the [OCI CLI Config File Documentation
 3. Install the dependencies:
   ```bash
   pip install -r requirements.txt
-
+  ```
 ### 🖥️ Running the Application
 
 1. Make sure your OCI config file is present at ~/.oci/config
 2. Launch the app:
   ```bash
   streamlit run app.py
+  ```
 3. Open your browser to http://localhost:8501 and start managing your OCI resources visually.
 
 # 🔐 Security Notes
