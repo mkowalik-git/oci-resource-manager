@@ -60,7 +60,7 @@ For detailed setup instructions, refer to the [OCI CLI Config File Documentation
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
    
-5. Install the dependencies:
+5. **Install the dependencies**:
 
    ```bash
    pip install -r requirements.txt
