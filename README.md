@@ -23,47 +23,59 @@ Before you begin, ensure the following are in place:
 If you don’t already have a config file for the OCI CLI, follow these steps:
 
 1. **Install the OCI CLI** (if not already installed):
+
    ```bash
    pip install oci-cli
    ```
-2. **Run the CLI config command**:
+   
+3. **Run the CLI config command**:
+
    ```bash
    oci setup config
    ```
-3. You will be prompted for:
+   
+5. You will be prompted for:
     - Your tenancy OCID
     - Your user OCID
     - Your compartment OCID
     - Your region (e.g., us-ashburn-1)
     - The path to your private key (a new key pair will be generated if not provided)
-4. The CLI will generate your ~/.oci/config file and keys
+6. The CLI will generate your ~/.oci/config file and keys
 
 For detailed setup instructions, refer to the [OCI CLI Config File Documentation](https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/cliinstall.htm#configfile).
 
 # 📦 Setup Instructions
 
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/your-username/oci-resource-manager-gui.git
    cd oci-resource-manager-gui
    ```
-2. **Create and activate a virtual environment**:
+   
+3. **Create and activate a virtual environment**:
+
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
-3. Install the dependencies:
+   
+5. Install the dependencies:
+
    ```bash
    pip install -r requirements.txt
    ```
+   
 # 🖥️ Running the Application
 
 1. Make sure your OCI config file is present at ~/.oci/config
 2. Launch the app:
+
    ```bash
    streamlit run app.py
    ```
-3. Open your browser to http://localhost:8501 and start managing your OCI resources visually.
+   
+4. Open your browser to http://localhost:8501 and start managing your OCI resources visually.
 
 # 🔐 Security Notes
 
