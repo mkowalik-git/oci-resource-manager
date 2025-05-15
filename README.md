@@ -48,21 +48,21 @@ For detailed setup instructions, refer to the [OCI CLI Config File Documentation
    cd oci-resource-manager-gui
    ```
 2. **Create and activate a virtual environment**:
-  ```bash
-  python -m venv venv
-  source venv/bin/activate  # On Windows: venv\Scripts\activate
-  ```
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 3. Install the dependencies:
-  ```bash
-  pip install -r requirements.txt
-  ```
+   ```bash
+   pip install -r requirements.txt
+   ```
 ### 🖥️ Running the Application
 
 1. Make sure your OCI config file is present at ~/.oci/config
 2. Launch the app:
-  ```bash
-  streamlit run app.py
-  ```
+   ```bash
+   streamlit run app.py
+   ```
 3. Open your browser to http://localhost:8501 and start managing your OCI resources visually.
 
 # 🔐 Security Notes
