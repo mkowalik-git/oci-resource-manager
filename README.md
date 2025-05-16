@@ -56,7 +56,7 @@ For detailed setup instructions, refer to the [OCI CLI Config File Documentation
 3. **Create and activate a virtual environment**:
 
    ```bash
-   python -m venv venv
+   python -m venv .venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
    
