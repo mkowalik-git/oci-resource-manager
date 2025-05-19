@@ -79,9 +79,9 @@ For detailed setup instructions, refer to the [OCI CLI Config File Documentation
 
 # 🔒 Security Notes
 
-- 🔐 All operations use your local OCI credentials (we're not storing anything, promise!)
-- 🚫 No sensitive information is stored by the application (your secrets are safe with us)
-- 🔑 SSH keys are only used temporarily during instance creation (like speed dating... for keys! They met, clicked, and then never saw each other again.)
+🔐 All operations use your local OCI credentials (we're not storing anything, promise!)
+🚫 No sensitive information is stored by the application (your secrets are safe with us)
+🔑 SSH keys are only used temporarily during instance creation (like speed dating... for keys! They met, clicked, and then never saw each other again.)
 
 # 🤝 Contributing
 
