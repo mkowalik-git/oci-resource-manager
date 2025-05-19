@@ -1,4 +1,9 @@
-streamlit==1.32.2
-oci==2.122.0
-python-dotenv==1.0.1
-pandas==2.2.1 
+# Core dependencies 🚀
+streamlit==1.32.2  # For the UI
+oci==2.122.0      # Oracle Cloud Infrastructure SDK
+python-dotenv==1.0.1  # For environment variable management
+pandas==2.2.1     # For data manipulation (used by Streamlit)
+
+# Optional but recommended dependencies ✨
+requests==2.31.0  # For HTTP requests
+python-dateutil==2.8.2  # For date handling 
