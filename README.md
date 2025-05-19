@@ -70,10 +70,12 @@ For detailed setup instructions, refer to the [OCI CLI Config File Documentation
 
 1. Make sure your OCI config file is properly set up at ~/.oci/config (no pressure, but this is important!)
 2. Start the application (drumroll, please 🥁):
+   
    ```bash
    streamlit run app.py
    ```
-3. Open your browser and navigate to http://localhost:8501 (or whatever port Streamlit tells you)
+   
+4. Open your browser and navigate to http://localhost:8501 (or whatever port Streamlit tells you)
 
 # 🔒 Security Notes
 
