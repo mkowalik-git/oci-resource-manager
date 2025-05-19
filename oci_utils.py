@@ -3,18 +3,22 @@ from typing import Dict, List, Optional, Tuple
 import os
 
 class OCIManager:
-    def __init__(self, config_file: str = "~/.oci/config", profile: str = "DEFAULT"):
+    def __init__(self, config_file: str = "~/.oci/config", profile: str = "DEFAULT", region: str = None):
         self.config = oci.config.from_file(os.path.expanduser(config_file), profile)
+        if region:
+            self.config["region"] = region
         self.identity = oci.identity.IdentityClient(self.config)
         self.network = oci.core.VirtualNetworkClient(self.config)
         self.compute = oci.core.ComputeClient(self.config)
+        self.database = oci.database.DatabaseClient(self.config)
         
         # Get tenancy OCID
         self.tenancy_id = self.config["tenancy"]
     
     def list_compartments(self) -> List[Dict]:
-        """List all compartments in the tenancy."""
-        compartments = self.identity.list_compartments(
+        """List all compartments in the tenancy (all pages)."""
+        compartments = oci.pagination.list_call_get_all_results(
+            self.identity.list_compartments,
             self.tenancy_id,
             compartment_id_in_subtree=True,
             lifecycle_state="ACTIVE"
@@ -226,10 +230,14 @@ class OCIManager:
             private_ip = None
             public_ip = None
             if vnic_attachments:
-                vnic = self.network.get_vnic(vnic_attachments[0].vnic_id).data
-                private_ip = vnic.private_ip
-                public_ip = vnic.public_ip
-                
+                try:
+                    vnic = self.network.get_vnic(vnic_attachments[0].vnic_id).data
+                    private_ip = vnic.private_ip
+                    public_ip = vnic.public_ip
+                except oci.exceptions.ServiceError:
+                    private_ip = "N/A"
+                    public_ip = "N/A"
+            
             result.append({
                 "id": instance.id,
                 "name": instance.display_name,
@@ -311,3 +319,93 @@ class OCIManager:
     def delete_vcn(self, vcn_id: str) -> None:
         """Delete a VCN."""
         self.network.delete_vcn(vcn_id) 
+
+    def list_autonomous_databases(self, compartment_id: str) -> List[Dict]:
+        """List Autonomous Databases in a compartment."""
+        dbs = self.database.list_autonomous_databases(compartment_id=compartment_id).data
+        result = []
+        for db in dbs:
+            result.append({
+                "id": db.id,
+                "display_name": db.display_name,
+                "db_name": db.db_name,
+                "lifecycle_state": db.lifecycle_state,
+                "db_workload": db.db_workload,
+                "cpu_core_count": db.cpu_core_count,
+                "data_storage_size_in_tbs": db.data_storage_size_in_tbs,
+                "is_free_tier": getattr(db, "is_free_tier", False),
+                "is_dedicated": getattr(db, "is_dedicated", False),
+                "db_version": db.db_version,
+                "is_auto_scaling_enabled": getattr(db, "is_auto_scaling_enabled", False),
+                "connection_strings": getattr(db, "connection_strings", None),
+                "service_console_url": getattr(db, "service_console_url", None),
+                "is_access_control_enabled": getattr(db, "is_access_control_enabled", False),
+                "nsg_ids": getattr(db, "nsg_ids", []),
+                "private_endpoint": getattr(db, "private_endpoint", None),
+                "whitelisted_ips": getattr(db, "whitelisted_ips", []),
+                "subnet_id": getattr(db, "subnet_id", None),
+                "time_created": str(getattr(db, "time_created", "")),
+                "db_version": getattr(db, "db_version", "")
+            })
+        return result
+
+    def create_autonomous_database(self, **kwargs) -> Dict:
+        """Create an Autonomous Database instance."""
+        details = oci.database.models.CreateAutonomousDatabaseDetails(**kwargs)
+        db = self.database.create_autonomous_database(details).data
+        return {"id": db.id, "display_name": db.display_name, "lifecycle_state": db.lifecycle_state}
+
+    def start_autonomous_database(self, db_id: str) -> None:
+        """Start an Autonomous Database instance."""
+        self.database.start_autonomous_database(db_id)
+
+    def stop_autonomous_database(self, db_id: str) -> None:
+        """Stop an Autonomous Database instance."""
+        self.database.stop_autonomous_database(db_id)
+
+    def terminate_autonomous_database(self, db_id: str) -> None:
+        """Terminate an Autonomous Database instance."""
+        self.database.delete_autonomous_database(db_id)
+
+    def get_autonomous_database_ords_url(self, db_id: str) -> Optional[str]:
+        """Get the ORDS URL for an Autonomous Database instance."""
+        db = self.database.get_autonomous_database(db_id).data
+        if hasattr(db, "service_console_url"):
+            return db.service_console_url
+        return None
+
+    def search_compartments(self, query: str) -> List[Dict]:
+        """
+        Search for compartments whose names contain the query string (case-insensitive).
+        Only performs the search if the query is at least 3 characters long.
+        Returns a list of matching compartments as dicts with 'id' and 'name'.
+        Searches all compartments (all pages).
+        """
+        if not query or len(query) < 3:
+            return []
+        compartments = oci.pagination.list_call_get_all_results(
+            self.identity.list_compartments,
+            self.tenancy_id,
+            compartment_id_in_subtree=True,
+            lifecycle_state="ACTIVE"
+        ).data
+        query_lower = query.lower()
+        return [
+            {"id": comp.id, "name": comp.name}
+            for comp in compartments
+            if query_lower in comp.name.lower()
+        ]
+
+    def list_regions(self) -> list:
+        """List all available regions for the tenancy."""
+        regions = self.identity.list_region_subscriptions(self.tenancy_id).data
+        return [r.region_name for r in regions]
+
+# Updated function to list compartments using OCIManager
+def list_compartments():
+    try:
+        oci_manager = OCIManager()
+        return oci_manager.list_compartments()
+    except Exception as e:
+        print(f"Error listing compartments: {e}")
+        return []    
