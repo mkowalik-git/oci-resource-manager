@@ -11,9 +11,11 @@ class OCIManager:
         self.network = oci.core.VirtualNetworkClient(self.config)
         self.compute = oci.core.ComputeClient(self.config)
         self.database = oci.database.DatabaseClient(self.config)
+        self.object_storage = oci.object_storage.ObjectStorageClient(self.config)
         
         # Get tenancy OCID
         self.tenancy_id = self.config["tenancy"]
+        self.namespace = self.object_storage.get_namespace().data
     
     def list_compartments(self) -> List[Dict]:
         """List all compartments in the tenancy (all pages)."""
@@ -400,6 +402,72 @@ class OCIManager:
         """List all available regions for the tenancy."""
         regions = self.identity.list_region_subscriptions(self.tenancy_id).data
         return [r.region_name for r in regions]
+
+    def list_buckets(self, compartment_id: str) -> List[Dict]:
+        """List all buckets in a compartment."""
+        buckets = oci.pagination.list_call_get_all_results(
+            self.object_storage.list_buckets,
+            self.namespace,
+            compartment_id=compartment_id
+        ).data
+        return [{
+            "name": bucket.name,
+            "storage_tier": getattr(bucket, "storage_tier", "Standard"),  # Default to Standard if not specified
+            "public_access": getattr(bucket, "public_access_type", "NoPublicAccess") == "ObjectRead"
+        } for bucket in buckets]
+
+    def create_bucket(self, compartment_id: str, name: str, storage_tier: str = "Standard", 
+                     public_access: bool = False) -> Dict:
+        """Create a new bucket."""
+        details = oci.object_storage.models.CreateBucketDetails(
+            name=name,
+            compartment_id=compartment_id,
+            storage_tier=storage_tier,
+            public_access_type="ObjectRead" if public_access else "NoPublicAccess"
+        )
+        bucket = self.object_storage.create_bucket(
+            self.namespace,
+            details
+        ).data
+        return {
+            "name": bucket.name,
+            "storage_tier": bucket.storage_tier,
+            "public_access": bucket.public_access_type == "ObjectRead"
+        }
+
+    def list_objects(self, bucket_name: str) -> List[Dict]:
+        """List all objects in a bucket."""
+        objects = oci.pagination.list_call_get_all_results(
+            self.object_storage.list_objects,
+            self.namespace,
+            bucket_name
+        ).data.objects
+        return [{
+            "name": obj.name,
+            "size": obj.size,
+            "time_modified": obj.time_modified
+        } for obj in objects]
+
+    def upload_object(self, bucket_name: str, object_name: str, file_data: bytes) -> Dict:
+        """Upload an object to a bucket."""
+        result = self.object_storage.put_object(
+            self.namespace,
+            bucket_name,
+            object_name,
+            file_data
+        )
+        return {
+            "name": object_name,
+            "etag": result.headers.get("etag")
+        }
+
+    def delete_object(self, bucket_name: str, object_name: str) -> None:
+        """Delete an object from a bucket."""
+        self.object_storage.delete_object(
+            self.namespace,
+            bucket_name,
+            object_name
+        )
 
 # Updated function to list compartments using OCIManager
 def list_compartments():
