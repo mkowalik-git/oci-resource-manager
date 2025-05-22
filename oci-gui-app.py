@@ -78,7 +78,7 @@ else:
     st.session_state["oci_compartment_name"] = None
 
 tab_labels = [
-    "Dashboard 🏠", "Network Management 🌐", "Instance Management 🖥️", "Autonomous Database 🍀"
+    "Dashboard 🏠", "Network Management 🌐", "Instance Management 🖥️", "Autonomous Database 🍀", "Object Storage 📦"
 ]
 tabs = st.tabs(tab_labels)
 
@@ -814,9 +814,204 @@ with tabs[3]:
     except Exception as e:
         st.error(f"Error: {str(e)} 😬")
 
+# Object Storage Tab
+with tabs[4]:
+    st.markdown("# **Object Storage Management 📦**")
+    try:
+        oci_manager = OCIManager(region=st.session_state["oci_region"])
+        selected_compartment_id = st.session_state["oci_compartment_id"]
+        
+        if selected_compartment_id:
+            # Create Bucket Section
+            if st.button("Create New Bucket", key="create_bucket_button"):
+                st.session_state.show_create_bucket = True
+                
+            if st.session_state.get('show_create_bucket', False):
+                with st.form("create_bucket_form"):
+                    st.subheader("Create New Bucket 🆕")
+                    bucket_name = st.text_input("Bucket Name")
+                    storage_tier = st.selectbox(
+                        "Storage Tier",
+                        ["Standard", "Archive", "InfrequentAccess"]
+                    )
+                    public_access = st.checkbox("Public Access", value=False)
+                    
+                    if st.form_submit_button("Create"):
+                        try:
+                            result = oci_manager.create_bucket(
+                                compartment_id=selected_compartment_id,
+                                name=bucket_name,
+                                storage_tier=storage_tier,
+                                public_access=public_access
+                            )
+                            st.success(f"Bucket {bucket_name} created successfully! 🎉")
+                            st.session_state.show_create_bucket = False
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Error creating bucket: {str(e)}")
+            
+            # List Buckets
+            st.markdown("## Buckets Overview 📦")
+            buckets = oci_manager.list_buckets(selected_compartment_id)
+            
+            if buckets:
+                st.markdown("Your storage containers are ready! 🎯")
+                for bucket in buckets:
+                    with st.expander(f"📦 {bucket['name']} ({bucket['storage_tier']})"):
+                        # File Upload Section
+                        st.markdown("### Upload Files 📤")
+                        uploaded_file = st.file_uploader(
+                            "Choose a file to upload",
+                            key=f"uploader_{bucket['name']}"
+                        )
+                        
+                        if uploaded_file is not None:
+                            upload_key = f"upload_{bucket['name']}"
+                            
+                            # Initialize dialog state if not exists
+                            if f"show_upload_dialog_{upload_key}" not in st.session_state:
+                                st.session_state[f"show_upload_dialog_{upload_key}"] = False
+                            
+                            # Show dialog if state is True
+                            if st.session_state[f"show_upload_dialog_{upload_key}"]:
+                                st.dialog("File Already Exists")
+                                st.warning(f"A file named '{uploaded_file.name}' already exists in this bucket. What would you like to do? 🤔")
+                                col1, col2, col3 = st.columns(3)
+                                
+                                if col1.button("Replace", type="primary"):
+                                    try:
+                                        oci_manager.upload_object(
+                                            bucket_name=bucket['name'],
+                                            object_name=uploaded_file.name,
+                                            file_data=uploaded_file.getvalue()
+                                        )
+                                        st.success(f"File {uploaded_file.name} replaced successfully! 🎉")
+                                        st.session_state[f"show_upload_dialog_{upload_key}"] = False
+                                        st.rerun()
+                                    except Exception as e:
+                                        st.error(f"Error replacing file: {str(e)}")
+                                
+                                if col2.button("Keep Both"):
+                                    try:
+                                        # Add "copy" to the filename
+                                        name_parts = uploaded_file.name.rsplit('.', 1)
+                                        new_name = f"{name_parts[0]}_copy.{name_parts[1]}" if len(name_parts) > 1 else f"{name_parts[0]}_copy"
+                                        
+                                        # Check if the copy name already exists
+                                        existing_objects = oci_manager.list_objects(bucket['name'])
+                                        copy_exists = any(obj['name'] == new_name for obj in existing_objects)
+                                        
+                                        if copy_exists:
+                                            # If copy exists, add a number to make it unique
+                                            counter = 1
+                                            while any(obj['name'] == f"{name_parts[0]}_copy{counter}.{name_parts[1]}" if len(name_parts) > 1 else f"{name_parts[0]}_copy{counter}" for obj in existing_objects):
+                                                counter += 1
+                                            new_name = f"{name_parts[0]}_copy{counter}.{name_parts[1]}" if len(name_parts) > 1 else f"{name_parts[0]}_copy{counter}"
+                                        
+                                        # Upload the file with the new name
+                                        oci_manager.upload_object(
+                                            bucket_name=bucket['name'],
+                                            object_name=new_name,
+                                            file_data=uploaded_file.getvalue()
+                                        )
+                                        st.success(f"File uploaded as {new_name} successfully! 🎉")
+                                        st.session_state[f"show_upload_dialog_{upload_key}"] = False
+                                        st.rerun()
+                                    except Exception as e:
+                                        st.error(f"Error uploading file: {str(e)}")
+                                
+                                if col3.button("Cancel"):
+                                    st.session_state[f"show_upload_dialog_{upload_key}"] = False
+                                    st.rerun()
+                            
+                            # Handle initial upload button click
+                            if st.button("Upload", key=upload_key):
+                                try:
+                                    # Check if file already exists
+                                    existing_objects = oci_manager.list_objects(bucket['name'])
+                                    file_exists = any(obj['name'] == uploaded_file.name for obj in existing_objects)
+                                    
+                                    if file_exists:
+                                        st.session_state[f"show_upload_dialog_{upload_key}"] = True
+                                        st.rerun()
+                                    else:
+                                        # If file doesn't exist, upload directly
+                                        oci_manager.upload_object(
+                                            bucket_name=bucket['name'],
+                                            object_name=uploaded_file.name,
+                                            file_data=uploaded_file.getvalue()
+                                        )
+                                        st.success(f"File {uploaded_file.name} uploaded successfully! 🎉")
+                                        st.rerun()
+                                except Exception as e:
+                                    st.error(f"Error uploading file: {str(e)}")
+                                    st.rerun()
+                        
+                        # List Objects in Bucket
+                        st.markdown("### Files in Bucket 📋")
+                        objects = oci_manager.list_objects(bucket['name'])
+                        
+                        if objects:
+                            cols = st.columns([4, 2, 2, 1])
+                            headers = ["Name", "Size", "Last Modified", "Actions"]
+                            for col, header in zip(cols, headers):
+                                col.write(f"**{header}**")
+                            
+                            for obj in objects:
+                                cols = st.columns([4, 2, 2, 1])
+                                cols[0].write(obj['name'])
+                                # Format file size with proper handling of None values
+                                size = obj.get('size', 0)
+                                if size is not None:
+                                    if size < 1024:
+                                        size_str = f"{size} B"
+                                    elif size < 1024 * 1024:
+                                        size_str = f"{size/1024:.2f} KB"
+                                    elif size < 1024 * 1024 * 1024:
+                                        size_str = f"{size/(1024*1024):.2f} MB"
+                                    else:
+                                        size_str = f"{size/(1024*1024*1024):.2f} GB"
+                                else:
+                                    size_str = "N/A"
+                                cols[1].write(size_str)
+                                cols[2].write(str(obj.get('time_modified', 'N/A')))
+                                
+                                # Delete button with confirmation dialog
+                                delete_key = f"delete_{bucket['name']}_{obj['name']}"
+                                if cols[3].button("🗑️", key=delete_key):
+                                    st.session_state[f"show_delete_dialog_{delete_key}"] = True
+                                
+                                # Show confirmation dialog if delete was clicked
+                                if st.session_state.get(f"show_delete_dialog_{delete_key}", False):
+                                    st.dialog("Confirm Delete")
+                                    st.warning(f"Are you sure you want to delete {obj['name']}? This action cannot be undone! 😱")
+                                    col1, col2 = st.columns(2)
+                                    if col1.button("Yes, Delete", type="primary"):
+                                        try:
+                                            oci_manager.delete_object(
+                                                bucket_name=bucket['name'],
+                                                object_name=obj['name']
+                                            )
+                                            st.success(f"File {obj['name']} deleted successfully! 🗑️")
+                                            st.session_state[f"show_delete_dialog_{delete_key}"] = False
+                                            st.rerun()
+                                        except Exception as e:
+                                            st.error(f"Error deleting file: {str(e)}")
+                                    if col2.button("Cancel"):
+                                        st.session_state[f"show_delete_dialog_{delete_key}"] = False
+                                        st.rerun()
+                        else:
+                            st.info("No files in this bucket. Time to upload some! 📤")
+            else:
+                st.info("No buckets found in this compartment. Create one to get started! 🚀")
+        else:
+            st.info("Please search for and select a compartment to manage Object Storage.")
+    except Exception as e:
+        st.error(f"Error: {str(e)} 😬")
+
 # Uncomment the following to ensure main() is called
-# def main():
+#    def main():
 #     st.write("Main function called")
-#
-# if __name__ == "__main__":
+
+#    if __name__ == "__main__":
 #     main()
