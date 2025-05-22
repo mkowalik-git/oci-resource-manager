@@ -8,7 +8,7 @@ Your friendly neighborhood OCI management tool! Built with Python and Streamlit,
 - 🖥️ **Compute Instance Launch**: Spin up new instances faster than you can say "cloud computing"!
 - 🔄 **Instance Management**: Start, stop, and terminate instances with a click. No more hunting through menus!
 - 🍀 **Autonomous Database**: Create and manage your smart databases with style.
-
+- 🪣 **Object Storage**: Create and manage buckets, upload files, and organize your cloud storage like a pro! Perfect for storing everything from backups to cat photos.
 
 ## 🛠️ Prerequisites
 
