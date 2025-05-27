@@ -49,7 +49,7 @@ For detailed setup instructions, refer to the [OCI CLI Config File Documentation
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/your-username/oci-resource-manager-gui.git
+   git clone https://github.com/mkowalik-git/oci-resource-manager-gui.git
    cd oci-resource-manager-gui
    ```
    
@@ -72,7 +72,7 @@ For detailed setup instructions, refer to the [OCI CLI Config File Documentation
 2. Start the application (drumroll, please 🥁):
    
    ```bash
-   streamlit run app.py
+   streamlit run oci-gui-app.py
    ```
    
 4. Open your browser and navigate to http://localhost:8501 (or whatever port Streamlit tells you)
